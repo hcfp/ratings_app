@@ -25,12 +25,13 @@ SECRET_KEY = 'django-insecure-zt89*u@ev-sf9s#u36b%#o#j+&y=0bm7oi5m)xklo_0%+6+9ba
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['habibc.pythonanywhere.com']
+ALLOWED_HOSTS = ['habibc.pythonanywhere.com', '127.0.0.1']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'ratings.apps.RatingsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,7 +44,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
