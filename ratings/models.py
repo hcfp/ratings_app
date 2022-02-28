@@ -22,7 +22,6 @@ class Professors(models.Model):
     code = models.CharField(max_length=10)
 
 class Ratings(models.Model):
-    submitting_user = models.ForeignKey(User, on_delete=models.CASCADE)
     professor = models.ForeignKey("Professors", on_delete=models.CASCADE)
     module_instance = models.ForeignKey("ModuleInstance", on_delete=models.CASCADE)
     score = models.IntegerField()
