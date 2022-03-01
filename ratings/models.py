@@ -12,7 +12,7 @@ class ModuleInstance(models.Model):
     semester = models.CharField(max_length=2)
 
 class ModuleLeaders(models.Model):
-    module = models.ForeignKey("ModuleInstance", on_delete=models.CASCADE)
+    module_instance = models.ForeignKey("ModuleInstance", on_delete=models.CASCADE)
     professor = models.ForeignKey("Professors", on_delete=models.CASCADE)
 
 class Professors(models.Model):
@@ -22,6 +22,5 @@ class Professors(models.Model):
     code = models.CharField(max_length=10)
 
 class Ratings(models.Model):
-    professor = models.ForeignKey("Professors", on_delete=models.CASCADE)
-    module_instance = models.ForeignKey("ModuleInstance", on_delete=models.CASCADE)
+    module_leader = models.ForeignKey("ModuleLeaders", on_delete=models.CASCADE)
     score = models.IntegerField()

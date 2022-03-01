@@ -40,8 +40,8 @@ def logout(request):
 @login_required
 def list_all(request):
     data = []
-    module_leaders_qs = ModuleLeaders.objects.values('module__module__code', 'module__module__name', 
-                                                    'module__year', 'module__semester', 
+    module_leaders_qs = ModuleLeaders.objects.values('module_instance__module__code', 'module_instance__module__name', 
+                                                    'module_instance__year', 'module_instance__semester', 
                                                     'professor__code', 'professor__title',
                                                     'professor__first_name', 'professor__last_name')
 
@@ -54,7 +54,7 @@ def list_all(request):
     for item in data:
         is_unique = True
         for combined in combined_names_data:
-            if combined["professor__code"] != item["professor__code"] and item["module__module__code"] == combined["module__module__code"] and item["module__module__name"] == combined["module__module__name"] and item["module__year"] == combined["module__year"]:
+            if combined["professor__code"] != item["professor__code"] and item["module_instance__module__code"] == combined["module_instance__module__code"] and item["module_instance__module__name"] == combined["module_instance__module__name"] and item["module_instance__year"] == combined["module_instance__year"]:
                 combined["professor__code"] += " " + item["professor__code"]
                 combined["professor__title"] += " " + item["professor__title"]
                 combined["professor__first_name"] += " " + item["professor__first_name"]
@@ -68,33 +68,33 @@ def list_all(request):
 @login_required
 def view(request):
     data = []
-    ratings_qs = Ratings.objects.values('score', 'professor__code', 'professor__title',
-                                        'professor__first_name', 'professor__last_name')
+    ratings_qs = Ratings.objects.values('score', 'module_leader__professor__code', 'module_leader__professor__title',
+                                        'module_leader__professor__first_name', 'module_leader__professor__last_name')
     for row in ratings_qs:
         data.append(row)
     
     prof_ratings = {}
     for row in data:
-        if row["professor__code"] not in prof_ratings:
-            prof_ratings[row["professor__code"]] = [row["score"]]
+        if row["module_leader__professor__code"] not in prof_ratings:
+            prof_ratings[row["module_leader__professor__code"]] = [row["score"]]
         else:
-            prof_ratings[row["professor__code"]].append(row["score"])
+            prof_ratings[row["module_leader__professor__code"]].append(row["score"])
 
     prof_averages = []
     for code, ratings in prof_ratings.items():
         for row in data:
-            if row["professor__code"] == code:
+            if row["module_leader__professor__code"] == code:
                 prof_average = {}
-                prof_average["professor-title"] = row["professor__title"] 
-                prof_average["professor-first-name"] = row["professor__first_name"]
-                prof_average["professor-last-name"] = row["professor__last_name"]
+                prof_average["professor-title"] = row["module_leader__professor__title"] 
+                prof_average["professor-first-name"] = row["module_leader__professor__first_name"]
+                prof_average["professor-last-name"] = row["module_leader__professor__last_name"]
                 prof_average["module-code"] = code
                 prof_average["average"] = round(sum(ratings) / len(ratings))
                 prof_averages.append(prof_average)
                 break
     return JsonResponse({"view": prof_averages})
 
-
+@login_required
 def average(request):
     data = []
 
@@ -104,17 +104,31 @@ def average(request):
     module_id = Module.objects.filter(code=module_code).values('id')
     prof_id = Professors.objects.filter(code=prof_code).values('id')
     module_instances = ModuleInstance.objects.filter(module__in=module_id).values('id')
-    average_ratings = Ratings.objects.filter(module_instance__in=module_instances, professor__in=prof_id).values('module_instance__module__code', 'module_instance__module__name', 'professor__code', 'professor__title', 'professor__first_name', 'professor__last_name', 'score')
-    
+    module_leader = ModuleLeaders.objects.filter(module_instance__in=module_instances, professor__in=prof_id).values('id')
+    average_ratings = Ratings.objects.filter(module_leader__in=module_leader).values('score', 'module_leader__module_instance__module__code', 'module_leader__module_instance__module__name', 'module_leader__professor__code', 'module_leader__professor__title', 'module_leader__professor__first_name', 'module_leader__professor__last_name')
+
     for rating in average_ratings:
         data.append(rating)
+    print(data, file=sys.stderr)
 
     sum_data = 0
     for item in data:
         sum_data += int(item["score"])
     average_data = round(sum_data / len(data))
-    return JsonResponse({"professor-title":data[0]["professor__title"], "professor-first-name":data[0]["professor__first_name"], "professor-last-name":data[0]["professor__last_name"], 'module-name':data[0]["module_instance__module__name"], 'average-score':average_data})
+    return JsonResponse({"professor-title":data[0]["module_leader__professor__title"], "professor-first-name":data[0]["module_leader__professor__first_name"], "professor-last-name":data[0]["module_leader__professor__last_name"], 'module-name':data[0]["module_leader__module_instance__module__name"], 'average-score':average_data})
 
 
 def rate(request):
-    pass
+    prof_code = request.POST["professor-code"]
+    module_code = request.POST["module-code"]
+    year = request.POST["year"]
+    semester = request.POST["semester"]
+    score = request.POST["score"]
+
+    module_id = Module.objects.filter(code=module_code).values('id')
+    prof_id = Professors.objects.filter(code=prof_code).values('id')
+    module_instances = ModuleInstance.objects.filter(module__in=module_id, year=year, semester=semester).values('id')
+    module_leader = ModuleLeaders.objects.filter(module_instance__in=module_instances, professor__in=prof_id).first()
+    Ratings.objects.create(module_leader=module_leader, score=score)
+
+    return JsonResponse({'rate-success' : True})
