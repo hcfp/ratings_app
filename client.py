@@ -36,25 +36,8 @@ def logout():
 
 def list_all():
     response = s.get("http://127.0.0.1:8000/ratings/list").json()
-    data = response["list"]
-
-    combined_names_data = []
-    combined_names_data.append(data[0])
-    del data[0]
-    for item in data:
-        is_unique = True
-        for combined in combined_names_data:
-            if combined["professor__code"] != item["professor__code"] and item["module__module__code"] == combined["module__module__code"] and item["module__module__name"] == combined["module__module__name"] and item["module__year"] == combined["module__year"]:
-                combined["professor__code"] += " " + item["professor__code"]
-                combined["professor__title"] += " " + item["professor__title"]
-                combined["professor__first_name"] += " " + item["professor__first_name"]
-                combined["professor__last_name"] += " " + item["professor__last_name"]
-                is_unique = False
-        if is_unique:
-            combined_names_data.append(item)
-
-
-    for item in combined_names_data:
+    response = response["list"]
+    for item in response:
         print("\nModule information")
         print(f'Code: {item["module__module__code"]} Name: { item["module__module__name"]} Year: 20{item["module__year"]} Semester: {item["module__semester"]}')
         print("Taught by")
@@ -68,15 +51,28 @@ def list_all():
         print("-" * 70)
 
 def view():
-    response = s.get("http://127.0.0.1/ratings/view").json()
+    response = s.get("http://127.0.0.1:8000/ratings/view").json()["view"]
+    print(f'The Rating of {response["professor-title"]} {response["professor-first-name"]}. {response["professor-last-name"]} ({response["module-code"]}) is {"*" * response["average"]}')
+
+def average():
+    prof_code = "VS1"
+    module_code = "CD1"
+    #prof_code = input("Professor code")
+    #module_code = input("Module code")
+
+    response = s.post("http://127.0.0.1:8000/ratings/average", data = {"professor-code": prof_code, "module-code": module_code}).json()
+    print(f'The rating of {response["professor-title"]} {response["professor-first-name"]}. {response["professor-last-name"]} ({prof_code}) in module {response["module-name"]} ({module_code}) is {"*" * response["average-score"]}')
 
 def menu():
     while(True):
-        print("1: Register")
-        print("2: Login")
-        print("3 : Logout")
-        print("4 : List")
-        print("Q: Quit")
+        print("1 - Register")
+        print("2 - Login")
+        print("3 - Logout")
+        print("4 - List")
+        print("5 - View")
+        print("6 - Average")
+        print("7 - Rate")
+        print("Q - Quit")
 
         choice = input("Pick an option: ")
         if choice == "1":
@@ -89,6 +85,8 @@ def menu():
             list_all()
         elif choice == "5":
             view()
+        elif choice == "6":
+            average()
         elif choice == "Q":
             print("Quiting...")
             break
