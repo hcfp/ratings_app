@@ -72,27 +72,27 @@ def view(request):
                                         'professor__first_name', 'professor__last_name')
     for row in ratings_qs:
         data.append(row)
-
+    
     prof_ratings = {}
     for row in data:
         if row["professor__code"] not in prof_ratings:
             prof_ratings[row["professor__code"]] = [row["score"]]
         else:
             prof_ratings[row["professor__code"]].append(row["score"])
-    average_prof_ratings = prof_ratings
-    prof_average = {}
-    for code, ratings in average_prof_ratings.items():
-        average_prof_ratings[code] = round(sum(ratings) / len(ratings))
-        if row["professor__code"] == code:
-            prof_average["professor-title"] = row["professor__title"] 
-            prof_average["professor-first-name"] = row["professor__first_name"]
-            prof_average["professor-last-name"] = row["professor__last_name"]
-            prof_average["module-code"] = code
-            prof_average["average"] = average_prof_ratings[code]
-            break
-    print(prof_average, file=sys.stderr)
 
-    return JsonResponse({"view": prof_average})
+    prof_averages = []
+    for code, ratings in prof_ratings.items():
+        for row in data:
+            if row["professor__code"] == code:
+                prof_average = {}
+                prof_average["professor-title"] = row["professor__title"] 
+                prof_average["professor-first-name"] = row["professor__first_name"]
+                prof_average["professor-last-name"] = row["professor__last_name"]
+                prof_average["module-code"] = code
+                prof_average["average"] = round(sum(ratings) / len(ratings))
+                prof_averages.append(prof_average)
+                break
+    return JsonResponse({"view": prof_averages})
 
 
 def average(request):
