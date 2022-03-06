@@ -4,7 +4,7 @@ import sys
 
 
 def register(host):
-    username = "user4"
+    username = "user5"
     password = "password123"
     email = "email@email.com"
     host = "127.0.0.1"
@@ -18,7 +18,7 @@ def register(host):
 
 
 def login(host, username, password):
-    username = "user4"
+    username = "user5"
     password = "password123"
     host = "127.0.0.1"
     response = s.post(f"http://{host}:8000/ratings/login",
@@ -38,8 +38,7 @@ def logout():
 
 
 def list_all():
-    response = s.get(f"http://{global_host}:8000/ratings/list").json()
-    response = response["list"]
+    response = s.get(f"http://{global_host}:8000/ratings/list").json()["list"]
     for item in response:
         print("\nModule information")
         print(f'Code: {item["module_instance__module__code"]} Name: { item["module_instance__module__name"]} Year: 20{item["module_instance__year"]} Semester: {item["module_instance__semester"]}')
@@ -58,8 +57,7 @@ def list_all():
 def view():
     response = s.get(f"http://{global_host}:8000/ratings/view").json()["view"]
     for item in response:
-        print(
-            f'The Rating of {item["professor-title"]} {item["professor-first-name"]}. {item["professor-last-name"]} ({item["module-code"]}) is {"*" * item["average"]}')
+        print(f'The Rating of {item["professor-title"]} {item["professor-first-name"]}. {item["professor-last-name"]} ({item["module-code"]}) is {"*" * item["average"]}')
 
 
 def average(prof_code, module_code):
@@ -82,8 +80,12 @@ def rate(prof_code, module_code, year, semester, score):
             "year": year,
             "semester": semester,
             "score": score}
-    response = s.post(f"http://{global_host}:8000/ratings/rate", data=data)
-    print(response.json())
+    response = s.post(f"http://{global_host}:8000/ratings/rate", data=data).json()
+    if response['rate-success']:
+        print("Rating submitted")
+    else:
+        print("Error making rating")
+
 
 def menu():
     while(True):
@@ -98,7 +100,7 @@ def menu():
             global_host = command_split[1]
             login(command_split[1], command_split[2], command_split[3])
         elif command_name == "logout":
-            logout(global_host)
+            logout()
         elif command_name == "list":
             list_all()
         elif command_name == "view":

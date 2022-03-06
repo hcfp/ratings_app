@@ -18,7 +18,7 @@ def register(request):
     email = request.POST['email']
     user = User.objects.create_user(username, email, password)
     user.save()
-    return JsonResponse({'username': username, 'email': email, 'register-success': True})
+    return HttpResponse(json.dumps({'username': username, 'email': email, 'register-success': True}), content_type="application/json")
 
 
 def login(request):
@@ -27,14 +27,14 @@ def login(request):
     user = authenticate(username=username, password=password)
     if user is not None:
         auth_login(request, user)
-        return JsonResponse({'username': username, 'login-success': True})
+        return HttpResponse(json.dumps({'username': username, 'login-success': True}), content_type="application/json")
     else:
-        return JsonResponse({'username': username, 'login-success': False})
+        return HttpResponse(json.dumps({'username': username, 'login-success': False}), content_type="application/json")
 
 
 def logout(request):
     auth_logout(request)
-    return JsonResponse({'logout-success': True})
+    return HttpResponse(json.dumps({'logout-success': True}), content_type="application/json")
 
 
 @login_required
@@ -63,7 +63,7 @@ def list_all(request):
         if is_unique:
             combined_names_data.append(item)
 
-    return JsonResponse({"list": combined_names_data})
+    return HttpResponse(json.dumps({"list": combined_names_data}), content_type="application/json")
 
 @login_required
 def view(request):
@@ -92,7 +92,7 @@ def view(request):
                 prof_average["average"] = round(sum(ratings) / len(ratings))
                 prof_averages.append(prof_average)
                 break
-    return JsonResponse({"view": prof_averages})
+    return HttpResponse(json.dumps({"view": prof_averages}), content_type="application/json")
 
 @login_required
 def average(request):
@@ -109,13 +109,12 @@ def average(request):
 
     for rating in average_ratings:
         data.append(rating)
-    print(data, file=sys.stderr)
 
     sum_data = 0
     for item in data:
         sum_data += int(item["score"])
     average_data = round(sum_data / len(data))
-    return JsonResponse({"professor-title":data[0]["module_leader__professor__title"], "professor-first-name":data[0]["module_leader__professor__first_name"], "professor-last-name":data[0]["module_leader__professor__last_name"], 'module-name':data[0]["module_leader__module_instance__module__name"], 'average-score':average_data})
+    return HttpResponse(json.dumps({"professor-title":data[0]["module_leader__professor__title"], "professor-first-name":data[0]["module_leader__professor__first_name"], "professor-last-name":data[0]["module_leader__professor__last_name"], 'module-name':data[0]["module_leader__module_instance__module__name"], 'average-score':average_data}))
 
 
 def rate(request):
@@ -131,4 +130,4 @@ def rate(request):
     module_leader = ModuleLeaders.objects.filter(module_instance__in=module_instances, professor__in=prof_id).first()
     Ratings.objects.create(module_leader=module_leader, score=score)
 
-    return JsonResponse({'rate-success' : True})
+    return HttpResponse(json.dumps({'rate-success' : True}), content_type="application/json")
