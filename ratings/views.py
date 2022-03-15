@@ -1,16 +1,17 @@
-from re import S
-from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
-import sys
+from django.http import HttpResponse
 import json
 from django.contrib.auth import login as auth_login, logout as auth_logout, authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from django.core.serializers import serialize
-from django.forms.models import model_to_dict
-from isort import file
 from .models import Professors, Ratings, ModuleInstance, Module, ModuleLeaders
+import math
 
+def my_round(num):
+    if (float(num) % 1) >= 0.5:
+        rounded = math.ceil(num)
+    else:
+        rounded = round(num)
+    return rounded
 
 def register(request):
     username = request.POST['username']
@@ -89,7 +90,7 @@ def view(request):
                 prof_average["professor-first-name"] = row["module_leader__professor__first_name"]
                 prof_average["professor-last-name"] = row["module_leader__professor__last_name"]
                 prof_average["module-code"] = code
-                prof_average["average"] = round(sum(ratings) / len(ratings))
+                prof_average["average"] = my_round(sum(ratings) / len(ratings))
                 prof_averages.append(prof_average)
                 break
     return HttpResponse(json.dumps({"view": prof_averages}), content_type="application/json")
@@ -113,7 +114,7 @@ def average(request):
     sum_data = 0
     for item in data:
         sum_data += int(item["score"])
-    average_data = round(sum_data / len(data))
+    average_data = my_round(sum_data / len(data))
     return HttpResponse(json.dumps({"professor-title":data[0]["module_leader__professor__title"], "professor-first-name":data[0]["module_leader__professor__first_name"], "professor-last-name":data[0]["module_leader__professor__last_name"], 'module-name':data[0]["module_leader__module_instance__module__name"], 'average-score':average_data}))
 
 
