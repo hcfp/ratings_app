@@ -6,7 +6,8 @@ def register():
     username = input("Username: ")
     password = input("Password: ")
     email = input("Email: ")
-    response = s.post(f"http://{host}:7000/ratings/register",
+    print(host)
+    response = s.post(f"http://{host}/ratings/register",
                       data={'username': username, 'password': password, 'email': email}).json()
     print(response)
 
@@ -14,7 +15,7 @@ def register():
 def login(host):
     username = input("Username: ")
     password = input("Password: ")
-    response = s.post(f"http://{host}:7000/ratings/login",
+    response = s.post(f"http://{host}/ratings/login",
                       data={'username': username, 'password': password}).json()
     if response["login-success"]:
         print("Logged in")
@@ -23,7 +24,7 @@ def login(host):
 
 
 def logout(host):
-    response = s.post(f"http://{host}:7000/ratings/logout").json()
+    response = s.post(f"http://{host}/ratings/logout").json()
     if response["logout-success"]:
         print("Logged out")
     else:
@@ -31,7 +32,7 @@ def logout(host):
 
 
 def list_all(host):
-    response = s.get(f"http://{host}:7000/ratings/list").json()["list"]
+    response = s.get(f"http://{host}/ratings/list").json()["list"]
     for item in response:
         print("\nModule information")
         print(f'Code: {item["module_instance__module__code"]} Name: { item["module_instance__module__name"]} Year: 20{item["module_instance__year"]} Semester: {item["module_instance__semester"]}')
@@ -48,7 +49,7 @@ def list_all(host):
 
 
 def view(host):
-    response = s.get(f"http://{host}:7000/ratings/view").json()["view"]
+    response = s.get(f"http://{host}/ratings/view").json()["view"]
     for item in response:
         print(f'The Rating of {item["professor-title"]} {item["professor-first-name"]}. {item["professor-last-name"]} ({item["module-code"]}) is {"*" * item["average"]}')
 
@@ -56,7 +57,7 @@ def view(host):
 def average(host, prof_code, module_code):
     data = {"professor-code": prof_code,
         "module-code": module_code}
-    response = s.post(f"http://{host}:7000/ratings/average", data=data).json()
+    response = s.post(f"http://{host}/ratings/average", data=data).json()
     print(f'The rating of {response["professor-title"]} {response["professor-first-name"]}. {response["professor-last-name"]} ({prof_code}) in module {response["module-name"]} ({module_code}) is {"*" * response["average-score"]}')
 
 
@@ -66,7 +67,7 @@ def rate(host, prof_code, module_code, year, semester, score):
             "year": year,
             "semester": semester,
             "score": score}
-    response = s.post(f"http://{host}:7000/ratings/rate", data=data).json()
+    response = s.post(f"http://{host}/ratings/rate", data=data).json()
     if response['rate-success']:
         print("Rating submitted")
     else:
